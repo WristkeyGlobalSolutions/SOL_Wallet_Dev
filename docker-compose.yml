@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: wgs-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    networks:
+      - wgs-network
+
+  backend:
+    build:
+      context: ./wgs-wallet-backend
+      dockerfile: Dockerfile
+    container_name: wgs-backend
+    ports:
+      - "8787:8787"
+    environment:
+      - PORT=8787
+      - SQLITE_PATH=/app/data/wgs.sqlite
+      - REDIS_URL=redis://redis:6379
+      - SOLANA_RPC=${SOLANA_RPC:-https://api.devnet.solana.com}
+      - JWT_SECRET=${JWT_SECRET:-wgs-wallet-secret-key-change-in-production}
+    volumes:
+      - backend-data:/app/data
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - wgs-network
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./wristkey-wallet
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=http://localhost:8787
+        - VITE_SOLANA_NETWORK=${VITE_SOLANA_NETWORK:-devnet}
+        - VITE_SOLANA_RPC_URL=${VITE_SOLANA_RPC_URL:-}
+    container_name: wgs-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - wgs-network
+    restart: unless-stopped
+
+volumes:
+  redis-data:
+    driver: local
+  backend-data:
+    driver: local
+
+networks:
+  wgs-network:
+    driver: bridge
+
+
+
+
