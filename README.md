@@ -1,2 +1,1 @@
-# Wristkey_Wallet
-# SOL_Wallet
+WGS Alpha Solana Wallet
