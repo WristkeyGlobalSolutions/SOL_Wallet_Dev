@@ -241,10 +241,10 @@ export async function getQueueJobs(queueName: 'airdrop' | 'send', states: ('acti
   const queue = queueName === 'airdrop' ? airdropQueue : sendQueue
   const jobs = await queue.getJobs(states)
   
-  return jobs.map(job => ({
+  return jobs.map(async job => ({
     id: job.id,
     name: job.name,
-    state: job.state,
+    state: await job.getState(),
     data: job.data,
     progress: job.progress,
     timestamp: job.timestamp,

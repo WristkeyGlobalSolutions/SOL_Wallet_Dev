@@ -11,6 +11,20 @@ db.exec(`
     label TEXT,
     address TEXT UNIQUE
   );
+
+  CREATE TABLE IF NOT EXISTS payments (
+    signature TEXT PRIMARY KEY,
+    sender TEXT NOT NULL,
+    recipient TEXT NOT NULL,
+    amount_sol REAL NOT NULL,
+    memo TEXT,
+    is_donation BOOLEAN NOT NULL,
+    user_id TEXT,
+    service_name TEXT,
+    duration TEXT,
+    timestamp INTEGER NOT NULL,
+    status TEXT NOT NULL
+  );
 `)
 
 export function listWatchlist() {

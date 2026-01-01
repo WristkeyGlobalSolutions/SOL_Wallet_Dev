@@ -94,9 +94,9 @@ router.get('/jobs', async (req, res) => {
     const jobStats = await sendQueue.getJobCounts('active', 'waiting', 'completed', 'failed')
     
     res.json({ 
-      jobs: jobs.map(job => ({
+      jobs: jobs.map(async job => ({
         id: job.id,
-        state: job.state,
+        state: await job.getState(),
         data: job.data,
         timestamp: job.timestamp
       })),

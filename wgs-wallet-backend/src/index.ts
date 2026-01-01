@@ -9,16 +9,24 @@ import balanceRouter from './routes/balance.js'
 import airdropRouter from './routes/airdrop.js'
 import sendRouter from './routes/send.js'
 import watchlistRouter from './routes/watchlist.js'
+import adminRouter from './routes/admin.js'
 import healthRouter from './routes/health.js'
 import { errorHandler } from './middleware/errors.js'
 import { authMiddleware } from './middleware/auth.js'
 import { setupQueues } from './lib/queues.js'
+import './lib/paymentVerification.js' // Start the worker and poller
 import { setupWebhooks } from './lib/webhooks.js'
 
 const app = express()
 
 app.use(helmet())
-app.use(cors())
+app.use(cors({
+  origin: [
+    "https://sol-wallet-frontend.vercel.app",
+    "https://wallet.wristkeyglobal.com"
+  ],
+  credentials: true
+}))
 app.use(express.json({ limit: '1mb' }))
 app.use(morgan('tiny'))
 
@@ -43,6 +51,7 @@ app.use('/api/balance', balanceRouter)
 app.use('/api/airdrop', airdropRouter)
 app.use('/api/send', sendRouter)
 app.use('/api/watchlist', authMiddleware, watchlistRouter)
+app.use('/api/admin', authMiddleware, adminRouter)
 app.use('/api/health', healthRouter)
 
 app.use(errorHandler)
